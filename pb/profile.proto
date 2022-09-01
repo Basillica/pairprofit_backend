@@ -1,0 +1,39 @@
+syntax = "proto3";
+package profile;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/types/profile";
+
+// A `listing` template describing its properties
+message Profile {
+  string email = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string id = 4;
+  string imageUri = 5;
+  string profileLink = 6;
+
+  enum ProfileListings {
+    Listing = 0;
+  }
+
+  repeated ProfileListings listingID = 7;
+  string profileTitle = 8;
+
+  enum AccountType {
+    ServiceProvider = 0;
+    ServiceReceiver = 1;
+  }
+
+  AccountType accountType = 9;
+
+  message Location {
+    string longitude = 1;
+    string latitude = 2;
+  }
+
+  Location location = 10;
+  google.protobuf.Timestamp dateJoined = 11;
+  
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package communication;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/types/communication";
+
+// A `chat` template describing the properties of a message
+message Chat {
+  string messageID = 1; // the unique id of the message
+  string message = 2; // the actual message
+
+  string chartGroupID = 3; // grouping chats
+
+  bool sent = 4; // boolean to determine if a message was sent by the given user
+  bool received = 5; // boolearn to determine if a message was being received by a user
+
+  message User {
+    string ID = 1; // the user ID
+    string name = 2; // the user fullname
+    string profileLink = 3; // the user profile link
+    string profileImage = 4; // the user profile image uri
+  }
+
+  User user = 6;
+
+  google.protobuf.Timestamp sentAt = 7;
+  
+}

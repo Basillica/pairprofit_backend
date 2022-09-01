@@ -1,0 +1,325 @@
+openapi: 3.0.2
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register
+      operationId: register_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login
+      operationId: login_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credentials'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /auth/logout:
+    get:
+      tags:
+        - auth
+      summary: Logout
+      operationId: logout_auth_logout_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Refresh token
+      operationId: refresh_token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                grant_type:
+                  title: The status of the operation
+                  type: string
+                  default: refresh_token
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /auth/link:
+    post:
+      tags:
+        - auth
+      summary: Confirm registration via link
+      operationId: confirm_registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  title: The email of the user
+                  type: string
+                  default: testuser@gmail.com
+                code:
+                  title: A unique provided in the registration link
+                  type: string
+                  default: some-really-long-code-in-registration-link
+                token:
+                  title: A unique token in the registration link
+                  type: string
+                  default: some-tome-in-registration-link
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credentials'
+  /auth/forgot_password:
+    post:
+      tags:
+        - auth
+      summary: Endpoint to trigger when a user decides to reset password
+      operationId: forgot_password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  title: The email of the user
+                  type: string
+                  default: testuser@gmail.com
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                properties:
+                  link:
+                    title: A link returned from the server in the format https://{env}/pairprofit.com/{token}/{hash}
+                    type: string
+                    default: https://staging.pairprofit.com/j3bDHoD843vEusDhQabAv1-Z7cDlOZ5U/gS8-jPDr8jnF1i-Baamjvu4sMvoTFbsS3J9JXoZXJEYq6XiZp25KL5bGh7ZxRcjTpa92
+                  success:
+                    title: If the operation was succesful or not
+                    type: boolean
+  /auth/reset_password:
+    post:
+      tags:
+        - auth
+      summary: Endpoint to trigger when a user tries to reset a password by clicking at a link contained in an email after calling the forgot_password endpoint
+      operationId: reset_password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  title: The email of the user
+                  type: string
+                  default: testuser@gmail.com
+                hash:
+                  title: The hash that was returned in the url after triggering the forgot password endpooint
+                  type: string
+                  default: j3bDHoD843vEusDhQabAv1-Z7cDlOZ5U
+                token:
+                  title: The token that was returned in the url after triggering the forgot password endpooint
+                  type: string
+                  default: gS8-jPDr8jnF1i-Baamjvu4sMvoTFbsS3J9JXoZXJEYq6XiZp25KL5bGh7ZxRcjTpa92
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                properties:
+                  username:
+                    title: The username of the user, the email
+                    type: string
+                    default: test@user.com
+                  hash:
+                    title: The hash returned in the url after triggering the forgot password endpoint
+                    type: string
+                    default: j3bDHoD843vEusDhQabAv1-Z7cDlOZ5U
+                  token:
+                    title: The token returned in the url after triggering the forgot password endpoint
+                    type: string
+                    default: gS8-jPDr8jnF1i-Baamjvu4sMvoTFbsS3J9JXoZXJEYq6XiZp25KL5bGh7ZxRcjTpa92
+  /auth/update_password:
+    post:
+      tags:
+        - auth
+      summary: Endpoint to trigger when a user changes their password from the application. The currrent user is verified from their persisted access token so their current password is not needed
+      operationId: update_password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  title: The email of the user
+                  type: string
+                  default: testuser@gmail.com
+                password:
+                  title: The new password of the user
+                  type: string
+                  default: testuser@gmail.com
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    title: The status of the operation. Their persisted access token is also updated
+                    type: boolean
+                
+components:
+  schemas:
+    Success:
+      title: Successful request
+      properties:
+        status:
+          title: The status of the operation
+          type: string
+    Credentials:
+      title: Credentials
+      required:
+        - access_token
+        - refresh_token
+      type: object
+      properties:
+        access_token:
+          title: Access Token
+          type: string
+        access_expiry:
+          title: Access Expiry
+          type: string
+          format: date-time
+        refresh_token:
+          title: Refresh Token
+          type: string
+        uuid:
+          title: Cognito username
+          type: string
+          
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    UserCreate:
+      title: UserCreate
+      required:
+        - username
+        - firstname
+        - lastname
+        - password
+        - account_type
+      type: object
+      properties:
+        username:
+          title: Username
+          type: string
+          default: testuser@gmail.com
+        firstname:
+          title: Firstname
+          type: string
+          default: test
+        lastname:
+          title: Lastname
+          type: string
+          default: user
+        password:
+          title: Password
+          type: string
+          default: abcd1234
+        account_type:
+          title: AccountType
+          type: string
+          default: regularAccount
+    UserLogin:
+      title: UserLogin
+      type: object
+      properties:
+        grant_type:
+          title: The grant type can be password, refresh, otp_password
+          type: string
+          default: password
+        username:
+          title: Email
+          type: string
+          default: testuser@gmail.com
+        password:
+          title: Password
+          type: string
+          default: abcd1234
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string

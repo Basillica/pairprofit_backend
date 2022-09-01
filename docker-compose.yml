@@ -1,10 +1,9 @@
 # Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
-
 version: '3'
 
 services:
 
-  pairprofit_backend:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,17 +16,18 @@ services:
       COOKIE_SECURE_ENABLE: true
       ALLOWED_ORIGIN: "http://localhost:3000"
       COOKIE_HTTPONLY: true
-      CRYPTO_SECRET: "+voicelinesecret"
+      CRYPTO_SECRET: "pairprofitsecret"
       GIN_MODE: release
       REDIS_URL: redis:6379 
     networks: 
       - pairprofit_api
     links:
      - redis
-
   redis:
     image: "redis:alpine" # Use a public Redis image to build the redis service    
     restart: unless-stopped
+    ports:
+      - 6379:6379
     networks: 
       - pairprofit_api
 

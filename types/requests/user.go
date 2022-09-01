@@ -5,8 +5,20 @@ import (
 	"net/http"
 
 	"github.com/mholt/binding"
-	"github.com/shopspring/decimal"
 )
+
+type InviteUserConfirmRequest struct {
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Token     string `json:"token"`
+	Workspace string `json:"workspace"`
+}
+
+type InviteUserRequest struct {
+	Emails []string `json:"emails"`
+}
 
 type UpdateProfileDataRequest struct {
 	Email             *string               `form:"email"`
@@ -34,15 +46,4 @@ func (f *UpdateProfileDataRequest) FieldMap(c *http.Request) binding.FieldMap {
 		&f.Url:               "url",
 		&f.Picture:           "picture",
 	}
-}
-
-type UpdateTopicChildRequest struct {
-	S3ID          string          `json:"s3_id"`
-	Page          int             `json:"page"`
-	ParentID      int             `json:"entry_id"`
-	Duration      float64         `json:"duration"`
-	XCoordinate   decimal.Decimal `json:"x_position"`
-	YCoordinate   decimal.Decimal `json:"y_position"`
-	Transcription string          `json:"transcription"`
-	ChildID       int             `json:"child_id"`
 }

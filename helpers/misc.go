@@ -1,8 +1,12 @@
 package helpers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func ArrayToString(a []int, delim string) (res *string) {
@@ -29,4 +33,26 @@ func RemoveDuplicateStr(strSlice []string) []string {
 		}
 	}
 	return list
+}
+
+func FormatExpTime(expirationData time.Time) string {
+	t := strings.ReplaceAll(expirationData.Format(time.RFC3339), ":", "-")
+	time := strings.Split(t, "+")[0]
+	return time
+}
+
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
+func GetHashedString(clientSecret string) string {
+	mac := hmac.New(sha256.New, []byte(clientSecret))
+	secretHash := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	return secretHash
 }

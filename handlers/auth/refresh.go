@@ -1,82 +1,65 @@
 package auth
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
-	"os"
-	"strconv"
+	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	cognitotypes "github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
 	"github.com/gin-gonic/gin"
-	auth_utils "pairprofit.com/x/utils"
+	"pairprofit.com/x/helpers"
+	"pairprofit.com/x/types/appenv"
+	"pairprofit.com/x/types/cognito"
+	"pairprofit.com/x/types/requests"
 )
 
-func Refresh(c *gin.Context) {
-	mapToken := map[string]string{}
-	if err := c.ShouldBindJSON(&mapToken); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	refreshToken := mapToken["refresh_token"]
-
-	//verify the token
-	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf") //this should be in an env file
-	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("REFRESH_SECRET")), nil
-	})
-	//if there is an error, the token must have expired
+func TokenRefresh(c *gin.Context) {
+	access, err := c.Cookie("access_token")
 	if err != nil {
-		fmt.Println("the error: ", err)
-		c.JSON(http.StatusUnauthorized, "Refresh token expired")
+		c.JSON(http.StatusBadRequest, gin.H{"success": false})
 		return
 	}
-	//is token valid?
-	// if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-	if !token.Valid {
-		c.JSON(http.StatusUnauthorized, err)
+
+	_, ok := helpers.GetUserOutput(c, access)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
-	//Since token is valid, get the uuid:
-	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
-	if ok && token.Valid {
-		refreshUuid, ok := claims["refresh_uuid"].(string) //convert the interface to string
-		if !ok {
-			c.JSON(http.StatusUnprocessableEntity, err)
+
+	var req requests.RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ValidatePayload(err, c)
+		return
+	}
+
+	ca := &cognito.CognitoAuth{
+		GrantType: req.GrantType,
+	}
+
+	accessToken, refreshTokenOrSession, err := ca.CreateToken(c)
+	if err != nil {
+		var nae *cognitotypes.NotAuthorizedException
+		if errors.As(err, &nae) {
+			c.JSON(http.StatusBadRequest, gin.H{"success": false})
 			return
 		}
-		userId, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, "Error occurred")
-			return
-		}
-		//Delete the previous Refresh Token
-		deleted, delErr := auth_utils.DeleteAuth(c, refreshUuid)
-		if delErr != nil || deleted == 0 { //if any goes wrong
-			c.JSON(http.StatusUnauthorized, "unauthorized")
-			return
-		}
-		//Create new pairs of refresh and access tokens
-		ts, createErr := auth_utils.CreateToken(userId)
-		if createErr != nil {
-			c.JSON(http.StatusForbidden, createErr.Error())
-			return
-		}
-		//save the tokens metadata to redis
-		saveErr := auth_utils.CreateAuth(c, userId, ts)
-		if saveErr != nil {
-			c.JSON(http.StatusForbidden, saveErr.Error())
-			return
-		}
-		tokens := map[string]string{
-			"access_token":  ts.AccessToken,
-			"refresh_token": ts.RefreshToken,
-		}
-		c.JSON(http.StatusCreated, tokens)
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		return
+	}
+
+	appenv := c.MustGet("appenv").(*appenv.AppConfig)
+	expirationTime := helpers.FormatExpTime(time.Now().Local().Add(time.Hour * time.Duration(23)))
+
+	if len(*accessToken) < 1 {
+		c.SetCookie("session", *refreshTokenOrSession, 86000, "/", appenv.COOKIE_DOMAIN, appenv.COOKIE_SECURE_ENABLE, appenv.COOKIE_HTTPONLY)
 	} else {
-		c.JSON(http.StatusUnauthorized, "refresh expired")
+		c.SetCookie("access_token", *accessToken, 86000, "/", appenv.COOKIE_DOMAIN, appenv.COOKIE_SECURE_ENABLE, appenv.COOKIE_HTTPONLY)
+		c.SetSameSite(http.SameSiteStrictMode)
 	}
+	c.SetCookie("xexptk", expirationTime, 25920000, "/", appenv.COOKIE_DOMAIN, appenv.COOKIE_SECURE_ENABLE, false)
+	c.SetSameSite(http.SameSiteStrictMode)
+
+	c.JSON(http.StatusCreated, gin.H{
+		"access_token": *accessToken,
+	})
 }

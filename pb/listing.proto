@@ -1,0 +1,59 @@
+syntax = "proto3";
+package listing;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/types/listing";
+
+// A `listing` template describing its properties
+message Listing {
+  string description = 1;
+  string id = 2;  // Unique ID number for this person.
+
+  enum ListingCategory {
+    Laundry = 0;
+    Shopping = 1;
+    Transportation = 2;
+    Cooking= 3;
+    Cleaning = 4;
+    AutoRepairs = 5;
+    ShortTermJobs = 6;
+    Farming = 7;
+    Delivery = 8;
+    BabySitting = 9;
+    HeavyLifting = 10;
+    Tutoring = 11;
+    Landscaping = 12;
+    ConstructionWork = 13;
+    Others = 25;
+    Caterers = 14;
+    HouseHold = 15;
+    Baking = 16;
+    MakeUp = 17;
+  }
+
+  ListingCategory listingCategory = 3;
+  string imageUri = 4;
+
+  message OwnerDetail {
+    string email = 1;
+    string imageUri = 2;
+    string profileLink = 3;
+  }
+
+  OwnerDetail owner = 5;
+
+  message Location {
+    string longitude = 1;
+    string latitude = 2;
+  }
+
+  Location location = 6;
+  google.protobuf.Timestamp creationTime = 7;
+  
+}
+
+// A list of `listings`.
+message Listings {
+  repeated Listing listing = 1;
+}

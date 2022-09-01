@@ -12,9 +12,10 @@ func RedisMiddleware() gin.HandlerFunc {
 	var client *redis.Client
 	dsn := helpers.GetEnv("REDIS_DNS", "redis:6379")
 	client = redis.NewClient(&redis.Options{
-		Addr:     dsn, //redis port
-		Password: "",
-		DB:       0,
+		Addr:       dsn,
+		Password:   "",
+		DB:         0,
+		MaxRetries: 3,
 	})
 	_, err := client.Ping().Result()
 	if err != nil {

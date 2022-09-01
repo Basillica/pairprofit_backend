@@ -4,14 +4,15 @@ import (
 	"math"
 )
 
+type DBModel struct {
+}
 type Paginator struct {
-	Limit      int    `json:"limit"`
-	Page       int    `json:"page"`
-	TotalRows  int    `json:"total_rows"`
-	TotalPages int    `json:"total_pages"`
-	Table      string `json:"table"`
-	QuerySet   []int  `json:"query_set"`
-	// QuerySet   []db.VoicelineEntriesModel `json:"query_set"`QuerySet   []db.VoicelineEntriesModel `json:"query_set"`
+	Limit      int       `json:"limit"`
+	Page       int       `json:"page"`
+	TotalRows  int       `json:"total_rows"`
+	TotalPages int       `json:"total_pages"`
+	Table      string    `json:"table"`
+	QuerySet   []DBModel `json:"query_set"`
 }
 
 func (p *Paginator) HasNext() bool {
@@ -61,7 +62,7 @@ func (p *Paginator) GetPage() int {
 	return p.Page
 }
 
-func (p *Paginator) Paginate() (res []int) {
+func (p *Paginator) Paginate() (res []DBModel) {
 	if len(p.QuerySet) <= p.Limit {
 		return p.QuerySet
 	}

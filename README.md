@@ -36,3 +36,28 @@ Add missing YAML tags in settings.json, otherwise you'll see validation errors i
 
 ## Postman testing
 Import `postman_collection.json` and test the flow.
+
+[GO celery](https://github.com/gocelery/gocelery/tree/master/example)
+
+## Gin custom struct validators
+Some important links regarding validators
+1. [custom validators](https://github.com/gin-gonic/gin#custom-validators)
+2. [Example of validators](https://blog.logrocket.com/gin-binding-in-go-a-tutorial-with-examples/)
+###### xSI7s_6WFfa1-TIZLyE5pg
+
+## Protocol Buffers
+```bash
+    protoc -I=pb --go_out=. pb/*.proto
+```
+
+## Documentation
+To be able to view the entire structure of the code as well the documentation, [godocs](https://pkg.go.dev/golang.org/x/tools/cmd/godoc) package is used. 
+This is easily installed using 
+```bash
+    go install golang.org/x/tools/cmd/godoc@latest
+```
+This can then be served locally using any port of choice as follows
+```bash
+    godoc -http=:6060
+```
+Navigate then to the link `http://localhost:6060` in the browser to explore the docs as well as any added examples from the source code as well as from external packages.

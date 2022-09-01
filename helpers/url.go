@@ -7,7 +7,7 @@ import (
 )
 
 func GetStaticUrl(hash string) string {
-	return "https://voiceline.me/" + hash
+	return "https://pairprofilt.me/" + hash
 }
 
 func FormatURL(url string) string {
@@ -19,22 +19,22 @@ func FormatURL(url string) string {
 }
 
 func GetStaticProfileUrl(hash string) string {
-	return "https://voiceline.me/p/" + hash
+	return "https://pairprofilt.me/p/" + hash
 }
 
 func GetUserUrl(email, workspaceId string) string {
 	hashString := email + GetEnv("DECODING_SECRET", "")
 	hashedString := GetMd5(hashString)
 	domain := GetEnv("APP_ENVIRONMENT", "staging")
-	return "https://" + domain + ".getvoiceline.com/profile/" + workspaceId + "/" + hashedString
+	return "https://" + domain + ".pairprofilt.com/profile/" + workspaceId + "/" + hashedString
 }
 
 func GetVLStaticUrl(hash string) string {
 	env := GetEnv("APP_ENVIRONMENT", "")
 	if env == "app" {
-		return "https://voiceline.me/vl/" + hash
+		return "https://pairprofilt.me/vl/" + hash
 	}
-	return "https://voiceline.me/staging/vl/" + hash
+	return "https://pairprofilt.me/staging/vl/" + hash
 }
 
 func GetUniqueHash(n int) string {

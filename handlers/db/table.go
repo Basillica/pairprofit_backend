@@ -16,7 +16,7 @@ import (
 // https://docs.localstack.cloud/get-started/#docker
 
 func CreateTable(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.CreateTable(c, &dynamodb.CreateTableInput{
 		AttributeDefinitions: []types.AttributeDefinition{
 			{
@@ -41,7 +41,7 @@ func CreateTable(c *gin.Context) {
 }
 
 func GetAll(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.Scan(c, &dynamodb.ScanInput{
 		TableName: aws.String("my-table"),
 	})
@@ -53,7 +53,7 @@ func GetAll(c *gin.Context) {
 }
 
 func FilterItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.Scan(c, &dynamodb.ScanInput{
 		TableName:        aws.String("my-table"),
 		FilterExpression: aws.String("attribute_not_exists(deletedAt) AND contains(firstName, :firstName)"),
@@ -69,7 +69,7 @@ func FilterItem(c *gin.Context) {
 }
 
 func GetItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.GetItem(c, &dynamodb.GetItemInput{
 		TableName: aws.String("my-table"),
 		Key: map[string]types.AttributeValue{
@@ -85,7 +85,7 @@ func GetItem(c *gin.Context) {
 }
 
 func CreateItemFromStruct(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	key := struct {
 		ID string `dynamodbav:"id" json:"id"`
 	}{ID: "123"}
@@ -106,7 +106,7 @@ func CreateItemFromStruct(c *gin.Context) {
 }
 
 func BatchGetItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.BatchGetItem(context.TODO(), &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]types.KeysAndAttributes{
 			"my-table": {
@@ -139,7 +139,7 @@ func BatchGetItem(c *gin.Context) {
 }
 
 func PutItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String("my-table"),
 		Item: map[string]types.AttributeValue{
@@ -157,7 +157,7 @@ func PutItem(c *gin.Context) {
 }
 
 func BatchPutItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.BatchWriteItem(context.TODO(), &dynamodb.BatchWriteItemInput{
 		RequestItems: map[string][]types.WriteRequest{
 			"TableOne": {
@@ -199,7 +199,7 @@ func BatchPutItem(c *gin.Context) {
 }
 
 func GetItems(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String("my-table"),
 		KeyConditionExpression: aws.String("id = :hashKey and #date > :rangeKey"),
@@ -219,7 +219,7 @@ func GetItems(c *gin.Context) {
 }
 
 func QueryAnIndex(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String("my-table"),
 		IndexName:              aws.String("GSI1"),
@@ -237,7 +237,7 @@ func QueryAnIndex(c *gin.Context) {
 }
 
 func QueryWithSorting(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String("my-table"),
 		IndexName:              aws.String("Index"),
@@ -259,7 +259,7 @@ func QueryWithSorting(c *gin.Context) {
 }
 
 func QueryAndScanWithPagination(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	p := dynamodb.NewQueryPaginator(dbClient, &dynamodb.QueryInput{
 		TableName:              aws.String("my-table"),
 		Limit:                  aws.Int32(1),
@@ -297,7 +297,7 @@ func QueryAndScanWithPagination(c *gin.Context) {
 }
 
 func UpdateItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String("my-table"),
 		Key: map[string]types.AttributeValue{
@@ -317,7 +317,7 @@ func UpdateItem(c *gin.Context) {
 }
 
 func ConditionalUpdate(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String("my-table"),
 		Key: map[string]types.AttributeValue{
@@ -339,7 +339,7 @@ func ConditionalUpdate(c *gin.Context) {
 }
 
 func UpdateWithExpressionBuilder(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	expr, err := expression.NewBuilder().WithUpdate(
 		expression.Set(
 			expression.Name("firstName"),
@@ -379,7 +379,7 @@ func UpdateWithExpressionBuilder(c *gin.Context) {
 }
 
 func IncrementItemAttr(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String("my-table"),
 		Key: map[string]types.AttributeValue{
@@ -399,7 +399,7 @@ func IncrementItemAttr(c *gin.Context) {
 }
 
 func DeleteItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	out, err := dbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 		TableName: aws.String("my-table"),
 		Key: map[string]types.AttributeValue{
@@ -414,7 +414,7 @@ func DeleteItem(c *gin.Context) {
 }
 
 func DeleteAllItem(c *gin.Context) {
-	dbClient := c.MustGet("redisClient").(*dynamodb.Client)
+	dbClient := c.MustGet("dbClient").(*dynamodb.Client)
 	p := dynamodb.NewScanPaginator(dbClient, &dynamodb.ScanInput{
 		TableName: aws.String("my-table"),
 	})
